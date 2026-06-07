@@ -8,6 +8,40 @@ You press Enter. Within milliseconds, Google's homepage appears. But what actual
 
 ---
 
+## The Big Picture
+
+Before diving into the details, here is the full flow at a glance:
+
+```mermaid
+flowchart TD
+    A([🖥️ Browser\nyour computer]) -->|"1 - DNS query\nwww.google.com → ?"| B[/🌐 DNS Resolver\nISP / 8.8.8.8/]
+    B -->|"DNS lookup chain\nRoot → .com → google.com"| C[(🗂️ DNS Authoritative\nNameserver\ngoogle.com)]
+    C -->|"Returns IP\ne.g. 142.250.80.36"| B
+    B -->|"IP address returned"| A
+
+    A -->|"2 - TCP/IP connection\nport 443 + TLS handshake\n🔒 HTTPS encrypted traffic"| D{🛡️ Firewall\nperimeter defense}
+    D -->|"Clean request\npasses through"| E[⚖️ Load Balancer\ndistributes across\nserver pool]
+    E -->|"Routes to\nleast-busy server"| F[🌍 Web Server\ne.g. Nginx\nhandles HTTP]
+    F -->|"Dynamic request\nforwarded"| G[⚙️ Application Server\nbusiness logic\npage generation]
+    G -->|"Query data\ne.g. search index\nuser preferences"| H[(🗄️ Database\nBigtable / Spanner\nRedis cache)]
+    H -->|"Returns data"| G
+    G -->|"Assembled HTML\nresponse"| F
+    F -->|"HTTP 200 OK\n🔒 encrypted response"| A
+
+    style A fill:#4A90D9,color:#fff,stroke:#2c6fad
+    style B fill:#7B68EE,color:#fff,stroke:#5a4db5
+    style C fill:#7B68EE,color:#fff,stroke:#5a4db5
+    style D fill:#E84040,color:#fff,stroke:#b52e2e
+    style E fill:#F5A623,color:#fff,stroke:#c07d0e
+    style F fill:#27AE60,color:#fff,stroke:#1a7a42
+    style G fill:#27AE60,color:#fff,stroke:#1a7a42
+    style H fill:#2980B9,color:#fff,stroke:#1a5a8a
+```
+
+*Each numbered step is explained in detail below.*
+
+---
+
 ## 1. DNS Request — Translating a Name to an Address
 
 Your browser knows the domain name `www.google.com`, but the internet routes traffic using **IP addresses** (like `142.250.80.36`), not human-readable names. To bridge this gap, the **Domain Name System (DNS)** acts as the internet's phonebook.
