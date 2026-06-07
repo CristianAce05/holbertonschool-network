@@ -27,15 +27,29 @@ The resolver caches the result (respecting the **TTL** — Time To Live) and ret
 
 ## 2. TCP/IP — Establishing a Reliable Connection
 
-With an IP address in hand, your browser needs to establish a connection to Google's server. This uses **TCP (Transmission Control Protocol)** over **IP (Internet Protocol)**.
+With an IP address in hand, your browser needs to establish a connection to Google's server. This is done using the **TCP/IP protocol suite** — the foundational communication model of the internet.
 
-TCP uses a **three-way handshake** to establish a reliable connection:
+### IP — Getting Packets to the Right Place
 
-1. **SYN** — Your machine sends a synchronize packet to Google's server on port 443 (HTTPS).
-2. **SYN-ACK** — Google's server acknowledges and responds with its own synchronize packet.
-3. **ACK** — Your machine sends a final acknowledgment, completing the handshake.
+**IP (Internet Protocol)** is responsible for addressing and routing. Your data is broken into small chunks called **packets**, each stamped with a source IP (your machine) and a destination IP (Google's server). IP itself is **connectionless and unreliable** — it simply routes each packet independently across the network, and packets may take different paths, arrive out of order, or get dropped along the way. That's where TCP comes in.
 
-IP handles the routing of packets across the network — each packet may travel through different routers and paths to reach its destination, but TCP ensures they are reassembled in order.
+### TCP — Reliable, Ordered Delivery
+
+**TCP (Transmission Control Protocol)** sits on top of IP and adds:
+- **Reliability** — Lost packets are retransmitted automatically.
+- **Ordering** — Packets are reassembled in the correct sequence, regardless of how they arrived.
+- **Flow control** — Prevents a fast sender from overwhelming a slow receiver.
+- **Congestion control** — Backs off transmission rate when the network is congested.
+
+### The Three-Way Handshake
+
+Before any data is exchanged, TCP establishes a connection through a **three-way handshake**:
+
+1. **SYN** — Your browser sends a segment with the SYN (synchronize) flag set to Google's server on **port 443** (the standard HTTPS port). This also includes a random **sequence number** (e.g., `x`) used to track data order.
+2. **SYN-ACK** — Google's server receives the SYN, reserves resources for the connection, and replies with both the SYN and ACK flags set. It acknowledges your sequence number (`x+1`) and sends its own sequence number (`y`).
+3. **ACK** — Your browser acknowledges the server's sequence number (`y+1`), completing the handshake. The connection is now **established** and both sides are ready to exchange data.
+
+This handshake ensures both parties agree on sequence numbers and confirms that both directions of the connection are functional before any application data flows. Only after this is complete does the browser proceed to the TLS handshake for encryption.
 
 ---
 
